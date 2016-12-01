@@ -125,3 +125,14 @@ fi
 			echo "Publish of '${PROJECT_NAME:=$PROJECT_DIR_NAME}' successed"
       done
  done <<< "$PROJECT_JSON_FILES"
+
+ # copy procfile
+mkdir -p ${BUILD_DIR}/.profile.d
+cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
+
+# executa post compilations
+if [ -f $SRC_DIR/.post_compile ]; then
+	(cd $SRC_DIR && source .post_compile)
+else
+	echo "File $SRC_DIR/.post_compile not found"	
+fi
