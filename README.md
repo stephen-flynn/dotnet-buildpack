@@ -1,6 +1,6 @@
 **Please note:** Forked from [noliar](https://github.com/noliar/dotnet-buildpack) which forked it from [Heroku](https://github.com/heroku/dotnet-buildpack)
 
-# ASP.NET Core Buildpack
+# ASP.NET Core Buildpack for Heroku
 
 This is a [Heroku buildpack](http://devcenter.heroku.com/articles/buildpack) for building [ASP.NET Core](https://docs.asp.net/en/latest/conceptual-overview/aspnet.html) apps using [`project.json` files](https://github.com/aspnet/Home/wiki/Project.json-file) and the [.NET CLI](https://github.com/dotnet/cli).
 
@@ -18,13 +18,13 @@ The buildpack will detect your app as ASP.NET Core if it has `project.json`. If 
 2. You must have `.deployment` and `Procfiles` files in root of the solution
 
 ### .deployment file
-This one instructs which projects needs to be deployed. For single executable use:
+This one instructs which projects need to be deployed. For single executable use:
 ```
 [config]
 project = src/WebAPI
 ```
-For multiple executables:
 
+For multiple executables:
 ```
 [config]
 project = src/WebAPI
