@@ -13,6 +13,27 @@ Example usage:
 
 The buildpack will detect your app as ASP.NET Core if it has `project.json`. If the source code you want to build contains multiple `project.json` files, you can use a [`.deployment`](https://github.com/projectkudu/kudu/wiki/Customizing-deployments) or set a `$PROJECT` config var to control which one is built.
 
-## Attension
-1. You should configure a unique compatible framework in `project.json`.
-2. Your Project should use `Microsoft.Extensions.Configuration.CommandLine` package.
+## Side notes
+1. Your web project should use `Microsoft.Extensions.Configuration.CommandLine` package in order to pass `--server.urls` to executable.
+2. You must have `.deployment` and `Procfiles` files in root of the solution
+
+### .deployment file
+This one instructs which projects needs to be deployed. For single executable use:
+```
+[config]
+project = src/WebAPI
+```
+For multiple executables:
+
+```
+[config]
+project = src/WebAPI
+project = src/Worker
+```
+
+### Procfile file
+This file instructs Heroku how dynos mapped to executable files. Here is an example:
+```
+web: cd $HOME/heroku_output/WebAPI && dotnet ./WebAPI.dll --server.urls http://+:$PORT ${CORE_ENVIRONMENT}
+worker: cd $HOME/heroku_output/Worker && dotnet ./Worker.dll
+```
