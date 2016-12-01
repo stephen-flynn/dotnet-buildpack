@@ -130,6 +130,12 @@ fi
 mkdir -p ${BUILD_DIR}/.profile.d
 cp -n ${BUILDPACK_DIR}/.profile.d/* ${BUILD_DIR}/.profile.d/
 
+if [ -e ${SRC_DIR}/Procfile ]; then
+	cp ${SRC_DIR}/Procfile ${BUILD_DIR}
+else
+	echo "'Procfile' was not found!"
+fi
+
 # executa post compilations
 if [ -f $SRC_DIR/.post_compile ]; then
 	(cd $SRC_DIR && source .post_compile)
