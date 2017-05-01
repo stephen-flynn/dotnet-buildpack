@@ -116,13 +116,12 @@ fi
 			fi
 
 			PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
-			PROJECT_NAME=$(ruby -rjson -e "j = JSON.parse(File.open('${PROJECT_DIR}/project.json','r:bom|utf-8').read); unless j['buildOptions'].nil? ; puts j['buildOptions']['outputName'];end")
-
-			echo "Publishing the app '${PROJECT_NAME:=$PROJECT_DIR_NAME}'"
+			
+			echo "Publishing the app '${$PROJECT_DIR_NAME}'"
 			# Publish to heroku_output
 			dotnet publish ${PROJECT_JSON_FILE} --output ${BUILD_DIR}/heroku_output/${PROJECT_DIR_NAME} --configuration ${CORE_CONFIGURATION}
 
-			echo "Publish of '${PROJECT_NAME:=$PROJECT_DIR_NAME}' successed"
+			echo "Publish of '${$PROJECT_DIR_NAME}' successed"
       done
  done <<< "$PROJECT_JSON_FILES"
 
