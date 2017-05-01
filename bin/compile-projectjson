@@ -12,15 +12,6 @@ else
 	CORE_ENVIRONMENT=""
 fi
 
-SRC_DIR=`mktemp -d`
-# Move the app source code into temporary src dir using subshell to not leak shopt
-(
-	shopt -s dotglob
-	mv ${BUILD_DIR}/* ${SRC_DIR}
-)
-
-mkdir -p ${CACHE_DIR}
-
 # Install .NET Core
 echo "Get .NET Core Version and Channel from the PROJECT"
 DEPLOYMENT_FILE_LOCATION=${SRC_DIR}/.deployment
@@ -54,9 +45,6 @@ if [[ "${CORE_VERSION}" == "latest" ]]; then
 fi
 
 : ${CORE_DOWNLOAD_LOCATION:="https://dotnetcli.blob.core.windows.net/dotnet/${CORE_CHANNEL}/Binaries/${CORE_VERSION_FIRST}/dotnet-dev-ubuntu-x64.${CORE_VERSION}.tar.gz"}
-
-echo "Installing the dependencies"
-apt_install libunwind8 gettext
 
 mkdir -p ${BUILD_DIR}/dotnet
 

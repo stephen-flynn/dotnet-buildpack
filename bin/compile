@@ -18,6 +18,21 @@ BUILDPACK_DIR=`cd $(dirname $0); cd ..; pwd`
 source $BUILDPACK_DIR/bin/util
 
 export_env_dir ${ENV_DIR}
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+
+SRC_DIR=`mktemp -d`
+# Move the app source code into temporary src dir using subshell to not leak shopt
+(
+	shopt -s dotglob
+	mv ${BUILD_DIR}/* ${SRC_DIR}
+)
+
+mkdir -p ${CACHE_DIR}
+mkdir -p ${BUILD_DIR}/.profile.d
+
+echo "Installing the dependencies"
+apt_install libunwind8 gettext
 
 # decide which SDK to pick - CSPROJ or JSON
 if [ -n "$( find $1 -maxdepth 5 -iname project.json )" ]; then
