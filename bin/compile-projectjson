@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+
+: ${CORE_VERSION:="latest"}
+: ${CORE_CHANNEL:="preview"}
+
+if [ -n "$BUILD_DEBUG" ]; then
+	CORE_CONFIGURATION="Debug"
+	CORE_ENVIRONMENT="--environment Development"
+else
+	CORE_CONFIGURATION="Release"
+	CORE_ENVIRONMENT=""
+fi
+
+SRC_DIR=`mktemp -d`
+# Move the app source code into temporary src dir using subshell to not leak shopt
+(
+	shopt -s dotglob
+	mv ${BUILD_DIR}/* ${SRC_DIR}
+)
+
+mkdir -p ${CACHE_DIR}
+
+# Install .NET Core
+echo "Get .NET Core Version and Channel from the PROJECT"
+DEPLOYMENT_FILE_LOCATION=${SRC_DIR}/.deployment
+if [ -n "$(find ${SRC_DIR}/global.json)" ]; then
+	CORE_VERSION=$(ruby -rjson -e "j = JSON.parse(File.open('${SRC_DIR}/global.json','r:bom|utf-8').read); unless j['sdk'].nil? ; puts j['sdk']['version'];end")
+	echo "Version in global.json is ${CORE_VERSION}"
+	if [ -z "${CORE_VERSION}" ]; then
+		CORE_VERSION="latest"
+	elif [[ "${CORE_VERSION}" != "latest" ]]; then
+		if [[ ! "${CORE_VERSION}" > "1.0.0-preview1-002702" ]]; then
+			CORE_CHANNEL="beta"
+		elif [[ "${CORE_VERSION}" == *"preview"* ]]; then
+			CORE_CHANNEL="preview"		
+		else
+			CORE_DOWNLOAD_LOCATION="https://dotnetcli.blob.core.windows.net/dotnet/Sdk/rel-1.0.0/dotnet-dev-ubuntu-x64.latest.tar.gz"
+		fi
+	fi
+fi
+
+if [[ "${CORE_VERSION}" == "latest" && -e "${DEPLOYMENT_FILE_LOCATION}" ]]; then
+	CORE_CHANNEL_TMP=$(awk -F "=" '/channel/ {print $2}' ${DEPLOYMENT_FILE_LOCATION} | tr -d ' ')
+	if [ ! -z "${CORE_CHANNEL_TMP}" ]; then
+		CORE_CHANNEL="${CORE_CHANNEL_TMP}"
+	fi
+fi
+
+CORE_VERSION_FIRST="$CORE_VERSION"
+
+if [[ "${CORE_VERSION}" == "latest" ]]; then
+	CORE_VERSION_FIRST="Latest"
+fi
+
+: ${CORE_DOWNLOAD_LOCATION:="https://dotnetcli.blob.core.windows.net/dotnet/${CORE_CHANNEL}/Binaries/${CORE_VERSION_FIRST}/dotnet-dev-ubuntu-x64.${CORE_VERSION}.tar.gz"}
+
+echo "Installing the dependencies"
+apt_install libunwind8 gettext
+
+mkdir -p ${BUILD_DIR}/dotnet
+
+echo "Installing .NET CORE ${CORE_VERSION} from ${CORE_DOWNLOAD_LOCATION}"
+curl ${CORE_DOWNLOAD_LOCATION} -Ls | tar xz -C ${BUILD_DIR}/dotnet
+ln -s ${BUILD_DIR}/dotnet /app
+
+export PATH="/app/dotnet:${PATH}"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+
+echo "Warmup local package cache"
+TEMP_DIR=`mktemp -d`
+cd $TEMP_DIR
+dotnet new
+dotnet restore
+cd -
+rm -rf $TEMP_DIR
+
+echo "Restoring packages in projects"
+dotnet restore ${SRC_DIR}/src
+
+# figure out which projects we should deploy/publish
+if [ -e ${DEPLOYMENT_FILE_LOCATION} ]; then
+	PROJECT_JSON_FILES=$(awk -F "=" '/project/ {print $2}' ${DEPLOYMENT_FILE_LOCATION} | tr -d ' ')
+else
+	echo "No deployment file found"
+	exit 1
+fi
+
+# run on  each project we need to publish, build it and deploy it
+ while IFS=';' read -ra ADDR; do
+      for i in "${ADDR[@]}"; do
+			PROJECT_JSON_FILE=${SRC_DIR}/$i
+			echo "Building ${PROJECT_JSON_FILE}"
+
+			PROJECT_DIR="$PROJECT_JSON_FILE"
+			if [[ -f $PROJECT_JSON_FILE ]]; then
+				PROJECT_DIR=$(dirname $PROJECT_JSON_FILE)
+			fi
+
+			PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
+			
+			echo "Publishing the app '$PROJECT_DIR_NAME'"
+			# Publish to heroku_output
+			dotnet publish ${PROJECT_JSON_FILE} --output ${BUILD_DIR}/heroku_output/${PROJECT_DIR_NAME} --configuration ${CORE_CONFIGURATION}
+
+			echo "Publish of '$PROJECT_DIR_NAME' successed"
+      done
+ done <<< "$PROJECT_JSON_FILES"
