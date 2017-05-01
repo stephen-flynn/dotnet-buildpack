@@ -117,11 +117,11 @@ fi
 
 			PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
 			
-			echo "Publishing the app '${$PROJECT_DIR_NAME}'"
+			echo "Publishing the app '$PROJECT_DIR_NAME'"
 			# Publish to heroku_output
 			dotnet publish ${PROJECT_JSON_FILE} --output ${BUILD_DIR}/heroku_output/${PROJECT_DIR_NAME} --configuration ${CORE_CONFIGURATION}
 
-			echo "Publish of '${$PROJECT_DIR_NAME}' successed"
+			echo "Publish of '$PROJECT_DIR_NAME' successed"
       done
  done <<< "$PROJECT_JSON_FILES"
 
