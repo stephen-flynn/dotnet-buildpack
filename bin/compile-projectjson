@@ -14,7 +14,6 @@ fi
 
 # Install .NET Core
 echo "Get .NET Core Version and Channel from the PROJECT"
-DEPLOYMENT_FILE_LOCATION=${SRC_DIR}/.deployment
 if [ -n "$(find ${SRC_DIR}/global.json)" ]; then
 	CORE_VERSION=$(ruby -rjson -e "j = JSON.parse(File.open('${SRC_DIR}/global.json','r:bom|utf-8').read); unless j['sdk'].nil? ; puts j['sdk']['version'];end")
 	echo "Version in global.json is ${CORE_VERSION}"

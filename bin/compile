@@ -30,6 +30,7 @@ SRC_DIR=`mktemp -d`
 
 mkdir -p ${CACHE_DIR}
 mkdir -p ${BUILD_DIR}/.profile.d
+DEPLOYMENT_FILE_LOCATION=${SRC_DIR}/.deployment
 
 echo "Installing the dependencies"
 apt_install libunwind8 gettext
