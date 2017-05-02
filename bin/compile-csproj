@@ -39,9 +39,9 @@ export NUGET_PACKAGES="${CACHE_DIR}/nuget/cache"
 # run on  each project we need to publish, build it and deploy it
  while IFS=';' read -ra ADDR; do
       for i in "${ADDR[@]}"; do
-			PROJECT_FILE=${SRC_DIR}/$i/$i.csproj
 			PROJECT_DIR=${SRC_DIR}/$i
 			PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
+			PROJECT_FILE=${SRC_DIR}/$i/$PROJECT_DIR_NAME.csproj
 			
 			echo "Restoring packages for ${PROJECT_FILE}"
 			dotnet restore --runtime ubuntu.14.04-x64 ${PROJECT_FILE}
