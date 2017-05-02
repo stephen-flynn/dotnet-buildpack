@@ -43,10 +43,10 @@ export NUGET_PACKAGES="${CACHE_DIR}/nuget/cache"
 			PROJECT_DIR_NAME=$(basename $PROJECT_DIR)
 			PROJECT_FILE=${SRC_DIR}/$i/$PROJECT_DIR_NAME.csproj
 			
-			echo "Restoring packages for ${PROJECT_FILE}"
+			echo "Restoring packages for ${PROJECT_DIR_NAME}"
 			dotnet restore --runtime ubuntu.14.04-x64 ${PROJECT_FILE}
 
-			echo "Publishing ${PROJECT_FILE} to ${BUILD_DIR}/heroku_output/${PROJECT_DIR_NAME}"
+			echo "Publishing ${PROJECT_DIR_NAME}"
 			dotnet publish ${PROJECT_FILE} --output ${BUILD_DIR}/heroku_output/${PROJECT_DIR_NAME} --runtime ubuntu.14.04-x64 --configuration Release
 
 			echo "Publish of '$PROJECT_DIR_NAME' successed"
